@@ -1,0 +1,32 @@
+services:
+  health-dashboard:
+    image: health-dashboard:latest
+    restart: unless-stopped
+    environment:
+      - SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - MODEL_1=${MODEL_1:-anthropic/claude-sonnet-4-6}
+      - MODEL_2=${MODEL_2:-x-ai/grok-3}
+      - MODEL_3=${MODEL_3:-openai/gpt-4.1}
+      - MODEL_JUDGE=${MODEL_JUDGE:-anthropic/claude-sonnet-4-6}
+      - DBT_PROJECT_DIR=/dbt
+      - DBT_PROFILES_DIR=/dbt-profiles
+      - DBT_BIN=/usr/local/bin/dbt
+      - VENV_PYTHON=/usr/local/bin/python3
+    volumes:
+      - /root/Projects/data-platform/dbt:/dbt:ro
+      - /root/.dbt:/dbt-profiles:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.health-dashboard.rule=Host(`health.patronusguardian.org`)"
+      - "traefik.http.routers.health-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.health-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.health-dashboard.loadbalancer.server.port=8501"
+      - "traefik.http.routers.health-dashboard.middlewares=health-auth"
+      - "traefik.http.middlewares.health-auth.basicauth.users=louis:$$***REMOVED***"
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
