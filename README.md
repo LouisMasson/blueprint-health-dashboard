@@ -10,6 +10,17 @@
 
 ---
 
+## Screenshots
+
+| Health Dashboard | Activity & Performance |
+|---|---|
+| ![Health Dashboard](docs/screenshots/dashboard-health.png) | ![Activity & Performance](docs/screenshots/dashboard-activity.png) |
+
+**Council of LLMs — Recommendations page**
+![Recommendations](docs/screenshots/recommendations.png)
+
+---
+
 ## What is it?
 
 Blueprint Health is a self-hosted dashboard that ingests weekly Apple Health exports, visualizes key longevity markers, and generates AI-powered recommendations using a novel **Council of LLMs** architecture.
