@@ -13,10 +13,10 @@ from .config import settings, METRIC_TARGETS
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-SYSTEM_PROMPT = """Tu es un coach santé personnalisé orienté longévité et performance physique.
-Tu analyses les données Apple Watch/Health de Louis, 27 ans, actif, et fournis des recommandations actionnables, spécifiques et basées sur les données.
-Ton style est direct, concis, data-driven. Tu n'es pas médecin — tes conseils sont lifestyle et entraînement.
-Tu réponds UNIQUEMENT en JSON valide, sans markdown, sans texte avant ou après."""
+SYSTEM_PROMPT = """You are a personal health coach focused on longevity and physical performance.
+You analyze Apple Watch / Apple Health data for an active user and provide actionable, specific, data-driven recommendations.
+Your style is direct, concise, and evidence-based. You are not a doctor — your advice covers lifestyle and training only.
+Respond ONLY in valid JSON, no markdown, no text before or after."""
 
 RECO_SCHEMA = """{
   "summary": "1 phrase synthèse de la semaine",
@@ -39,16 +39,29 @@ Règles :
 - Répondre UNIQUEMENT en JSON valide avec le même schéma + champ "convergence" sur chaque reco"""
 
 
-def _build_context_prompt(df: pd.DataFrame) -> str:
+def _build_context_prompt(df: pd.DataFrame, df_gym: pd.DataFrame | None = None) -> str:
     cols = [
         "week_start", "sleep_total_avg_h", "sleep_deep_avg_h", "sleep_rem_avg_h",
-        "hrv_avg_ms", "rhr_avg", "vo2_max_latest", "workouts_count",
+        "hrv_avg_ms", "rhr_avg", "vo2_max_latest", "workouts_count", "runs_count",
         "running_distance_km", "active_energy_total_kj", "respiratory_rate_avg",
     ]
     available = [c for c in cols if c in df.columns]
     subset = df[available].tail(12).copy()
     subset["week_start"] = subset["week_start"].astype(str)
     table = subset.to_markdown(index=False, floatfmt=".1f")
+
+    gym_section = ""
+    if df_gym is not None and not df_gym.empty:
+        gym_cols = ["week_start", "sessions_count", "volume_kg_total", "sets_total", "rpe_avg"]
+        gym_available = [c for c in gym_cols if c in df_gym.columns]
+        gym_subset = df_gym[gym_available].tail(12).copy()
+        gym_subset["week_start"] = gym_subset["week_start"].astype(str)
+        gym_table = gym_subset.to_markdown(index=False, floatfmt=".0f")
+        gym_section = f"""
+
+Données musculation hebdomadaires (Gym Logger) :
+{gym_table}
+"""
 
     targets = "\n".join(
         f"- {v['label']} ({v['unit']}): "
@@ -59,7 +72,7 @@ def _build_context_prompt(df: pd.DataFrame) -> str:
     return f"""Voici les données de santé hebdomadaires de Louis (12 dernières semaines) :
 
 {table}
-
+{gym_section}
 Références optimales :
 {targets}
 
@@ -144,13 +157,13 @@ Produis la synthèse finale fusionnée."""
     return await _call_model(client, settings.model_judge, judge_user)
 
 
-def generate_recommendations(df: pd.DataFrame) -> tuple[dict, dict, dict, dict]:
+def generate_recommendations(df: pd.DataFrame, df_gym: pd.DataFrame | None = None) -> tuple[dict, dict, dict, dict]:
     """Returns (model1_out, model2_out, model3_out, final_merged).
 
     Uses a thread pool to avoid RuntimeError when called from Streamlit's
     already-running event loop.
     """
-    user_prompt = _build_context_prompt(df)
+    user_prompt = _build_context_prompt(df, df_gym)
 
     async def _all():
         r1, r2, r3 = await _run_parallel(user_prompt)
