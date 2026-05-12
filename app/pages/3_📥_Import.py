@@ -26,6 +26,9 @@ uploaded = st.file_uploader(
 )
 
 if uploaded:
+    if uploaded.size > 50 * 1024 * 1024:
+        st.error("Fichier trop volumineux (max 50 MB)")
+        st.stop()
     try:
         payload = json.loads(uploaded.read())
     except json.JSONDecodeError as e:
@@ -66,8 +69,8 @@ if uploaded:
                     "outputs": {
                         "prod": {
                             "type": "postgres",
-                            "host": "localhost",
-                            "port": 5433,
+                            "host": settings.db_host,
+                            "port": settings.db_port,
                             "dbname": "postgres",
                             "user": "postgres",
                             "password": settings.db_password,

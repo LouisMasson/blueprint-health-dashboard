@@ -6,21 +6,22 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     db_host: str = "localhost"
-    db_port: int = 5433
+    db_port: int = 5432
     db_name: str = "postgres"
     db_user: str = "postgres"
     db_password: str = Field(alias="SUPABASE_DB_PASSWORD")
 
     openrouter_api_key: str
+    app_url: str = "http://localhost:8501"
     model_1: str = "anthropic/claude-sonnet-4-6"
     model_2: str = "x-ai/grok-4.1-fast"
     model_3: str = "openai/gpt-4.1"
     model_judge: str = "anthropic/claude-sonnet-4-6"
 
-    dbt_project_dir: str = "/root/Projects/data-platform/dbt"
-    dbt_profiles_dir: str = "/root/.dbt"
-    venv_python: str = "/root/.venv-data-platform/bin/python3"
-    dbt_bin: str = "/root/.venv-data-platform/bin/dbt"
+    dbt_project_dir: str = "/dbt"
+    dbt_profiles_dir: str = "/dbt-profiles"
+    venv_python: str = "/usr/local/bin/python3"
+    dbt_bin: str = "/usr/local/bin/dbt"
 
 
 
@@ -35,5 +36,7 @@ METRIC_TARGETS = {
     "rhr_avg":            {"label": "FC repos",          "unit": "bpm",      "max": 55.0,              "higher_better": False},
     "vo2_max_latest":     {"label": "VO2max",            "unit": "ml/kg/min","min": 52.0,              "higher_better": True},
     "workouts_count":     {"label": "Entraînements",     "unit": "/sem",     "min": 4.0,               "higher_better": True},
-    "running_distance_km":{"label": "Course",            "unit": "km",       "min": 25.0,              "higher_better": True},
+    "runs_count":         {"label": "Sorties course",    "unit": "/sem",     "min": 2.0,               "higher_better": True},
+    "running_distance_km":{"label": "Course",            "unit": "km",       "min": 15.0,              "higher_better": True},
+    "gym_volume_kg":      {"label": "Volume muscu",      "unit": "kg/sem",   "min": 8000.0,            "higher_better": True},
 }

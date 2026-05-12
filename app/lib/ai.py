@@ -88,7 +88,7 @@ async def _call_model(client: httpx.AsyncClient, model_id: str, user_prompt: str
         OPENROUTER_URL,
         headers={
             "Authorization": f"Bearer {settings.openrouter_api_key}",
-            "HTTP-Referer": "https://health.patronusguardian.org",
+            "HTTP-Referer": settings.app_url,
             "X-Title": "Blueprint Health Dashboard",
         },
         json={

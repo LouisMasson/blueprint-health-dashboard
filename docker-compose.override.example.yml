@@ -1,0 +1,18 @@
+# Copy to docker-compose.override.yml (gitignored) and fill in real values.
+# Generate hash: htpasswd -nbB youruser 'yourpassword'
+#
+# Required env vars for this compose file:
+#   PUBLIC_HOST=health.example.com
+#   BASIC_AUTH_USERS=youruser:$$2y$$05$$...bcrypt_hash...
+#   DB_HOST=localhost
+#   DB_PORT=5433
+
+services:
+  health-dashboard:
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - PUBLIC_HOST=${PUBLIC_HOST}
+    labels:
+      - "traefik.http.routers.health-dashboard.middlewares=health-auth"
+      - "traefik.http.middlewares.health-auth.basicauth.users=${BASIC_AUTH_USERS}"

@@ -4,6 +4,8 @@ services:
     restart: unless-stopped
     environment:
       - SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
+      - DB_HOST=${DB_HOST:-localhost}
+      - DB_PORT=${DB_PORT:-5432}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - MODEL_1=${MODEL_1:-anthropic/claude-sonnet-4-6}
       - MODEL_2=${MODEL_2:-x-ai/grok-3}
@@ -18,12 +20,12 @@ services:
       - /root/.dbt:/dbt-profiles:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.health-dashboard.rule=Host(`health.patronusguardian.org`)"
+      - "traefik.http.routers.health-dashboard.rule=Host(`${PUBLIC_HOST:-localhost}`)"
       - "traefik.http.routers.health-dashboard.entrypoints=websecure"
       - "traefik.http.routers.health-dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.services.health-dashboard.loadbalancer.server.port=8501"
       - "traefik.http.routers.health-dashboard.middlewares=health-auth"
-      - "traefik.http.middlewares.health-auth.basicauth.users=louis:$$***REMOVED***"
+      - "traefik.http.middlewares.health-auth.basicauth.users=${BASIC_AUTH_USERS}"
     networks:
       - dokploy-network
 
